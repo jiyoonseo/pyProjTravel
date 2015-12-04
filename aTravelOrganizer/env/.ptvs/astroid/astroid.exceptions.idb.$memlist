@@ -1,0 +1,9 @@
+ResolveError
+__doctype__
+NotFoundError
+UnresolvableName
+AstroidBuildingException
+InferenceError
+AstroidError
+UseInferenceDefault
+NoDefault

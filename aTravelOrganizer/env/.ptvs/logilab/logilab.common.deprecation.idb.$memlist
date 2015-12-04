@@ -1,0 +1,12 @@
+deprecated
+Version
+moved
+_defaultdeprecator
+warn
+class_deprecated
+DeprecationManager
+class_renamed
+DeprecationWrapper
+__docformat__
+class_moved
+sys

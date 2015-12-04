@@ -1,0 +1,16 @@
+sys
+str_to_bytes
+warn
+BytesIO
+types
+os
+StringIO
+str_encode
+builtins
+all
+reload
+deprecated
+method_type
+any
+__docformat__
+FileIO

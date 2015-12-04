@@ -1,0 +1,12 @@
+AbstractSizable
+Structure
+Abstract
+abc
+Sizable
+BadComplexMro
+AbstractB
+Container
+Hashable
+Iterator
+GoodComplexMRO
+Concret

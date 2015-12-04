@@ -1,0 +1,11 @@
+itertools
+_inspected_modules
+_import_gi_module
+MANAGER
+inspect
+re
+_gi_build_stub
+AstroidBuildingException
+_identifier_re
+AstroidBuilder
+sys

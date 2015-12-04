@@ -1,0 +1,20 @@
+﻿{% extends "layout.html" %}
+
+{% block content %}
+
+
+<script src="../static/scripts/login.js"></script>
+
+
+<div class="jumbotron" style="margin-top:50px">
+    <h2>{{message}} Please log in.</h2>
+
+    {% include 'login/login_form.html' %}
+    {% include 'login/create_account.html' %}
+
+</div>
+
+
+
+
+{% endblock %}

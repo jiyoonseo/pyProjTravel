@@ -1,0 +1,12 @@
+EXCEPTION_TUPLE
+MySecondException
+MyException
+socket
+MySecondGoodException
+NON_EXCEPTION_TUPLE
+EXCEPTION
+SkipException
+MyGoodException
+UnknownError
+SecondSkipException
+UNKNOWN_COMPONENTS

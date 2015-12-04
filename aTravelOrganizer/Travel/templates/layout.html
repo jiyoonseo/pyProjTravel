@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>{{title}} - Trip Organizer</title>
+    <link href="../static/content/bootstrap.min.css" rel="stylesheet" />
+    <link href="../static/content/site.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../static/scripts/modernizr-2.6.2.js"></script>
+
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="{{ url_for('home') }}" class="navbar-brand">Trip Organizer</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li class="pull-right">
+                        <form action="{{url_for('login')}}" method="get" >
+                            <button type="submit" class="btn btn-default" name="logout" value="logout" style="margin-top: 10px;">Log Out</button>
+                        </form>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- end of Navbar -->
+
+    
+    <div class="container body-content">
+        <!-- Contents index.html  -->
+        {% block content %}{% endblock %}
+        <!-- end of Contents index.html -->
+
+        <hr />
+        
+        <footer>
+            <p>&copy; {{ year }} - Trip Organizer, Python Class Project</p>
+        </footer>
+    </div>
+
+    <script src="/static/scripts/jquery-1.10.2.js"></script>
+    <script src="/static/scripts/bootstrap.js"></script>
+    <script src="/static/scripts/respond.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

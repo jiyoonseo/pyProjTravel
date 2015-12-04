@@ -1,0 +1,15 @@
+SixBrainTest
+six
+HAS_NOSE
+MANAGER
+HashlibTest
+sys
+nodes
+astroid
+NoseBrainTest
+ModuleExtenderTest
+nose
+NamedTupleTest
+test_utils
+bases
+unittest

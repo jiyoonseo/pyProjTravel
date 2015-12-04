@@ -1,0 +1,4 @@
+AstroidBuilder
+register_module_extender
+MANAGER
+pytest_transform

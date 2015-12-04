@@ -1,0 +1,47 @@
+﻿<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-lg pull-right" data-toggle="modal" data-target="#createNewTrip">
+    <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;&nbsp;&nbsp; Add New Trip
+</button>
+
+<!-- Modal -->
+<form method="post" class="form-horizontal">
+    <div class="modal fade" id="createNewTrip" tabindex="-1" role="dialog" aria-labelledby="addNewTrip">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h3 class="modal-title" id="addNewTrip">New Trip</h3>
+
+
+                </div>
+
+                <div class="modal-body">
+                    <!-- button type="button" class="btn btn-danger pull-right"> <span class="glyphicon glyphicon-plus"></span> Add New Field</button>  -->
+                    <div class="input-group">
+                        <span class="input-group-addon" id="new_trip_id">Trip Id </span>
+                        <span type="text" class="form-control" aria-describedby="new_trip_id" id="new_trip_id" name="new_trip_id" style="background-color:#d0d0d0">{{auto_gen_trip_id}}</span>
+                        <span class="input-group-addon">Auto Generated</span>
+                    </div>
+                    <br />
+
+                    <div class="input-group">
+                        <span class="input-group-addon" id="new_trip_name">Trip Name </span>
+                        <input type="text" class="form-control" placeholder="ex. California Trip" aria-describedby="new_trip_name" id="new_trip_name" name="new_trip_name" required />
+
+                    </div>
+
+
+
+
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

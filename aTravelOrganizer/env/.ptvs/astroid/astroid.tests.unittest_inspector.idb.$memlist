@@ -1,0 +1,12 @@
+inspector
+LinkerTest2
+_silent_no_wrap
+Instance
+YES
+nodes
+resources
+LinkerTest
+MANAGER
+astroid_wrapper
+AstroidManager
+unittest

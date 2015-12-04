@@ -1,0 +1,19 @@
+﻿{% extends "layout.html" %}
+
+{% block content %}
+
+
+<script src="../static/scripts/home.js"></script>
+
+
+<div class="jumbotron" style="margin-top:50px">
+    <h2>Hello, {{user_name}} </h2>
+    <p style="color:#ff0000"> {{msg}}</p>
+    <form action="home">
+        <!-- action="travel" or "userInput" for test  -->
+        <button type="submit" class="btn btn-primary">Go to Enter Travel Input</button>
+    </form>
+
+</div>
+
+{% endblock %}

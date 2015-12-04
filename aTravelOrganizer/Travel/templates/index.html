@@ -1,0 +1,21 @@
+﻿{% extends "layout.html" %}
+
+{% block content %}
+
+
+<script src="../static/scripts/home.js"></script>
+
+
+<div class="jumbotron" style="margin-top:50px">
+    <h2>Hello, {{user_name}} </h2>
+    <p> {{msg}}</p>
+    <!-- START:     Add Trip-->
+    {% include 'modals/addTrip.html' %}
+    <!-- END:       Add Trip-->
+
+</div>
+{% include 'modals/addField.html' %}
+{% include 'travelList.html' %}
+
+
+{% endblock %}

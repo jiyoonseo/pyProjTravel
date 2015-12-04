@@ -1,0 +1,17 @@
+install_requires
+author_email
+include_dirs
+modname
+license
+numversion
+version
+long_desc
+join
+absolute_import
+scripts
+web
+mailinglist
+description
+classifiers
+distname
+author

@@ -1,0 +1,64 @@
+﻿                    <!-- **************START MODAL TO ADD NEW FIELD ************** -->
+
+
+<!-- Modal -->
+<form method="post" class="form-inline">
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="addNewTrip">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h3 class="modal-title" id="addNewTrip">Add New Field to {{trip_name}} <br /><small class="pull-right">({{trip_id}})</small></h3>
+
+
+                </div>
+
+                <div class="modal-body">
+                    <!-- button type="button" class="btn btn-danger pull-right"> <span class="glyphicon glyphicon-plus"></span> Add New Field</button>  -->
+
+
+
+                    <table class="table table-hover" id="field_table">
+                        <!-- Include here 'home.js' -->
+                        {{table_fields}}
+                    </table>
+
+
+                    <!-- add field item -->
+                    <div class="dropdown ">
+                        <button class="btn btn-danger dropdown-toggle" type="button" id="add_new_field" name="add_new_field" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <span class="glyphicon glyphicon-plus"></span>
+                            Select Field {{type}}
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" name="field_select" id="field_select" aria-labelledby="add_new_field">
+
+                            <li id="flight_selected">
+                                <input type="radio" style="visibility:hidden;" name="field_select" class="field_select" id="flight" value="flight" />
+                                <label for="flight" style="cursor: pointer;"> Flight </label>
+                            </li>
+
+                            <li id="hotel_selected">
+                                <input type="radio" style="visibility:hidden;" name="field_select" class="field_select" id="hotel" value="hotel" />
+                                <label for="hotel" style="cursor: pointer;"> Hotel </label>
+                            </li>
+                            <li id="place_selected">
+                                <input type="radio" style="visibility:hidden;" name="field_select" class="field_select" id="place" value="place" />
+                                <label for="place" style="cursor: pointer;"> Place </label>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- end of field item -->
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">&nbsp;&nbsp;&nbsp; Add &nbsp;&nbsp;&nbsp;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<!-- ************** END MODAL TO ADD NEW FIELD ************** -->

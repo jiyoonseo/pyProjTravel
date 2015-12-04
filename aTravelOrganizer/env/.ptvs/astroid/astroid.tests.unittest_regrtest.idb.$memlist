@@ -1,0 +1,16 @@
+sys
+textwrap
+nodes
+six
+Whatever
+require_version
+AstroidManager
+resources
+build_module
+NonRegressionTests
+MANAGER
+extract_node
+unittest
+Instance
+BUILTINS
+AstroidBuilder

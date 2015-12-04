@@ -1,0 +1,8 @@
+ATTRS_VAL
+__docformat__
+latin_to_vcg
+EDGE_ATTRS
+string
+NODE_ATTRS
+GRAPH_ATTRS
+VCGPrinter

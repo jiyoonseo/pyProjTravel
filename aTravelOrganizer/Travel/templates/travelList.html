@@ -1,0 +1,130 @@
+﻿<div class="row">
+
+
+
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">{{user_name}}'s Travel List</div>
+
+
+        <!-- Table -->
+        <table class="table table-hover">
+            <tr>
+                <th>Trip ID</th>
+                <th>Trip Name</th>
+                <th>Members</th>
+                <th>Start Date/Time</th>
+                <th>End Date/Time</th>
+                <th>&nbsp;</th>
+            </tr>
+
+            <!-- 
+            <tr>
+                <td>sample name</td>
+                <td>sample id</td>
+                <td>sample start</td>
+                <td>sample end</td>
+                <td><button type="button" class="btn btn-default btn-sm pull-right" onclick="location.href = '/trip/{{travel_id}}';">{{travel_id}}</button></td>
+            </tr>
+            -->
+
+            {{show_trip_list}}
+
+
+        </table>
+    </div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="row" style="visibility:hidden">
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <!-- group item #1 -->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                <h4 class="panel-title">
+                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="travel_id_01">
+                        <!-- place of travel ID -->
+                        {{travel_id}} TRAVEL ID
+                        <span class="caret"></span>
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="travel_id_01">
+                <div class="panel-body">
+
+                    <!-- Add a modal for add a field-->
+                    <!-- Button trigger modal -->
+                    
+                    <button type="button" class="btn btn-danger btn-sm pull-right" data-toggle="modal" data-target="#myModal">
+                        <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;&nbsp;&nbsp; Add New Field
+                    </button>
+                    <br /><br />
+
+                    <!-- Show Result Table for each travel -->
+                    <table class="table table-hover">
+                        {{sorted_result}}
+                    </table>
+                    Group 1 - Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                </div>
+            </div>
+        </div>
+
+        <!-- group item #2 -->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingTwo">
+                <h4 class="panel-title">
+                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        Travel ID #2
+                        <span class="caret"></span>
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                <div class="panel-body">
+                    <!-- Add a modal for add a field-->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-danger btn-sm pull-right" data-toggle="modal" data-target="#myModal">
+                        <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;&nbsp;&nbsp; Add New Field
+                    </button>
+                    <br /><br />
+
+                    Group 2 - Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                </div>
+            </div>
+        </div>
+
+        <!-- group item #3 -->
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingThree">
+                <h4 class="panel-title">
+                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        Travel ID #3 
+                        <span class="caret"></span>
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                <div class="panel-body">
+                    <!-- Add a modal for add a field-->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-danger btn-sm pull-right" data-toggle="modal" data-target="#myModal">
+                        <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;&nbsp;&nbsp; Add New Field
+                    </button>
+                    <br /><br />
+
+                    Group 3 - Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

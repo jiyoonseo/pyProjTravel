@@ -1,0 +1,12 @@
+dedent
+_indent
+MANAGER
+_IMPORTS
+_IMPORTS_2
+_IMPORTS_3
+six_moves_transform
+AstroidBuildingException
+_six_fail_hook
+AstroidBuilder
+sys
+register_module_extender
