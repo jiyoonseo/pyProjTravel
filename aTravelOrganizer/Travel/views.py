@@ -65,7 +65,7 @@ def login():
 
             temp_user = User(email, pw, fname, lname, 0)
             app_user = temp_user
-            repo.create_user(user)             
+            repo.create_user(app_user)             
             
             return render_template('login.html', message=Markup("<div style='color:#f00;'>Thank you for create an account! </div>"))
 
