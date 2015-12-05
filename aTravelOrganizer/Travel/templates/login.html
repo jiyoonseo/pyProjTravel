@@ -12,6 +12,19 @@
     {% include 'login/login_form.html' %}
     {% include 'login/create_account.html' %}
 
+
+    <!-- error handling -->
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message_error in messages %}
+    <div class="alert alert-warning">
+        {{ message_error }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
 </div>
 
 

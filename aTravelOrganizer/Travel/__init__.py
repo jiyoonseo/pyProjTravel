@@ -17,6 +17,8 @@ app.config.from_object('settings')
 from Travel.models.Repository import Repository
 repo = Repository(app.config['DATABASE_URI'])
 
+from Travel.models.User import User
+app_user = User('','','','',0)
 
 # Sample HTTP error handling
 @app.errorhandler(404)

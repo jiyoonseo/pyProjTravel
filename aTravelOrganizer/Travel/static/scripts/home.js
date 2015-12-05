@@ -83,4 +83,23 @@
 
         console.log("place...")
     });
+
+
+    /**
+    * add new trip - 1. create new trip; 2. add existing trip 
+    * 
+    */
+    $('#add_exisiting_trip').click(function () {
+        console.log("add_exisiting_trip: clicked..");
+        $('#createTrip').hide();
+        $('#addExistingTrip').show();
+    });
+
+    $('#addExistingTrip').hide();
+    $('#create_new_trip_back').click(function () {
+        console.log("create_new_trip_back: clicked..");
+        $('#addExistingTrip').hide();
+        $('#createTrip').show();
+    });
+
 });

@@ -52,30 +52,48 @@ class Repository(object):
             print("Error Occured in Repository.create_user" + str(e))
             raise
 
-    def add_trip_name(self, trip_obj):
+
+
+
+    def add_trip_name(self, trip_obj, admin):  # arg 'admin' is boolean
         try:
             with self.__conn:
-                cursor = self.__conn.cursor()
-                cursor.execute("insert into trips (trip_id, trip_name, user_id_s) values (?, ?, ?)", (trip_obj.trip_id, trip_obj.trip_name, trip_obj.user_id))  
+                cursor = self.__conn.cursor()                
                 
-                ### add new trip to the user
-                trip_admin = cursor.execute("select trip_admin from users where user_id = ?", (trip_obj.user_id,))
-                admin_result = trip_admin.fetchone()
-                admin_list = []
-                admin_list.append(admin_result[0])
-                admin_list.append(trip_obj.trip_id)
+                if admin:
+                    cursor.execute("insert into trips (trip_id, trip_name, user_id_s) values (?, ?, ?)", (trip_obj.trip_id, trip_obj.trip_name, trip_obj.user_id))  
+                    column = "trip_admin"                    
+                else:
+                    column = "trip_user"
+                    
+                trip_admin = cursor.execute("select " + column + " from users where user_id = ?", (trip_obj.user_id,))
+                trip_result = trip_admin.fetchone()
+
+                trip_str = ''
+
+                if trip_result[0] is None or trip_result[0] == '' :
+                    trip_str = trip_obj.trip_id
+                else:                    
+                    trip_result_list = []
+                    trip_result_list.append(trip_result[0])
+                    trip_result_list.append(trip_obj.trip_id)
                 
-                admin_s = ', '.join(admin_list)
-                cursor.execute("UPDATE users SET trip_admin=? WHERE user_id=?", (admin_s, trip_obj.user_id))
+                    trip_str = ', '.join(trip_result_list)                    
 
-
+                if admin:
+                    cursor.execute("UPDATE users SET trip_admin=? WHERE user_id=?", (trip_str, trip_obj.user_id))                
+                    pass
+                else:
+                    cursor.execute("UPDATE users SET trip_user=? WHERE user_id=?", (trip_str, trip_obj.user_id))                
+                    pass
+                
+                
 
         except Exception as e:
             print("Error Occured in Repository.add_trip_name" + str(e))
             raise
-
-
-    def get_admin_trips(self, trip_id):
+    
+    def get_trips_from_trips_table(self, trip_id):
         try:
             
             list_all = []
@@ -83,12 +101,18 @@ class Repository(object):
             cursor = self.__conn.cursor()
             exe = cursor.execute("select * from trips where trip_id= ?", (trip_id,) )   # user_id = ?", (user_id,)
             result = exe.fetchone()
-            list_all.extend(result)
 
+            if result:
+                list_all.extend(result)
+            else:
+                list_all = []
+
+
+            print("list_all in Repository.get_trips_from_trips_table ++++++++++++++++++++++++++++++++++++++")
             print(list_all)
             return list_all
         except Exception as e:
-            print("ERROR OCCURED in Repository.get_trips: " + str(e))
+            print("ERROR OCCURED in Repository.get_trips_from_trips_table: " + str(e))
             raise
 
 
@@ -108,7 +132,7 @@ class Repository(object):
             print(list_all)
             return list_all
         except Exception as e:
-            print("ERROR OCCURED in Repository.get_trips: " + str(e))
+            print("ERROR OCCURED in Repository.get_trips....shhhh...: " + str(e))
             raise
 
 
@@ -159,20 +183,24 @@ class Repository(object):
             raise
 
 
-    def get_trip_users(self, user_id):
+    def get_trip_users(self, user_id):  # return non-admin trip ids
         try:
             cursor = self.__conn.cursor()
             user_list = []
             
             trip_user = cursor.execute("select trip_user from users where user_id = ?", (user_id,))
             user_result = trip_user.fetchone()
+
+            if admin_result is None:
+                return None
+
             user_s = str(user_result[0])
 
             # comma separated string to list
             pattern = re.compile("^\s+|\s*,\s*|\s+$")
             user_list = [x for x in pattern.split(admin_s) if x]
 
-            return user_list
+            return user_list  # type: list
 
         except Exception as e:
             # Do something here
@@ -181,21 +209,32 @@ class Repository(object):
         return
 
 
-
-    def get_trip_admins(self, user_id):
+    # get trip_admin trip ids from users and return all the admin : TRIP IDs
+    def get_trip_list(self, user_id, admin): 
         try:
             cursor = self.__conn.cursor()
-            admin_list = []
+            trip_list = []
             
-            trip_admin = cursor.execute("select trip_admin from users where user_id = ?", (user_id,))
+            if admin:
+                column = "trip_admin"
+            else:
+                column = "trip_user"
+            
+            
+
+            trip_admin = cursor.execute("select " + column + " from users where user_id = ?", (user_id,))
             admin_result = trip_admin.fetchone()
+
+            if admin_result is None:
+                return None
+
             admin_s = str(admin_result[0])
 
             # comma separated string to list
             pattern = re.compile("^\s+|\s*,\s*|\s+$")
-            admin_list = [x for x in pattern.split(admin_s) if x]
+            trip_list = [x for x in pattern.split(admin_s) if x]
 
-            return admin_list
+            return trip_list
 
         except Exception as e:
             # Do something here

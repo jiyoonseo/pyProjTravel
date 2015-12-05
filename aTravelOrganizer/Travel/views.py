@@ -4,6 +4,7 @@ import json, requests
 
 from Travel import app
 from Travel import repo
+from Travel import app_user
 from Travel.models.Flight import Flight
 from Travel.models.Hotel import Hotel
 from Travel.models.Place import Place
@@ -18,8 +19,34 @@ from flask import Markup
 from datetime import datetime
 import re
 
+def requires_permissions(*permissions):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if repo.get_user(session['username']).permissions in permissions:
+                return f(*args, **kwargs)
+            else:
+                abort(403)
+        return wrapped
+    return wrapper
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'session_user' in session:
+            return f(*args, **kwargs)
+        else:
+            flash("A login is required to see the page!")
+            return redirect(url_for('login', next=request.path))
+    return decorated_function
+
+
+
+
+
+
 # global variable
-app_user = None
+# app_user = None
 
 # global variables -- temp
 travel_id = "ok whatever"
@@ -27,34 +54,46 @@ user_id = "user_js_01"
 user_name = "happy tree"
 trip_id = "default"
 
+@app.route('/')  # temp --> remove later
+@app.route('/logout')
+def logout():
+    print("logout !!!")
+    session.pop('session_user', None)
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))  
+
+
+
 ### *********************************************************************************************************************
 ### #######################################                 ROOT PAGE                 ####################################
 ### *********************************************************************************************************************
-@app.route('/', methods=['GET', 'POST'])
+# @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods =['GET','POST'])
 def login():
-    global app_user
-    if request.method == 'GET':
+    # global app_user
+    # session required
+
+    if request.method == 'GET' and session.get('session_user') is None :
+        print("BOTH == NONE")
         return render_template('login.html')
-    elif request.method == 'POST':
-        # login
-        if request.form['auth'] == 'login':
-            print('login--- form has been sent :D')
+    else:
+        user_email = request.form['login_email']
+        user_pw = request.form['login_pw']
 
-            # TO-Do : varification from repo is required.
-            login_email = request.form['login_email']
-            login_pw = request.form['login_pw']
-            user_obj_db = repo.get_user_obj(login_email)
-            app_user = user_obj_db
+        ### after having useremail && password 
+        login_user = repo.get_user_obj(user_email)
 
-            if user_obj_db.check_password(login_pw):    # login success
-                session['username'] = app_user.get_email()
-                return redirect(url_for('home'))  
-            else:                                       # login failed
-                return render_template('login.html', message=Markup("<div style='color:#f00;'>FAILED logged in... </div>"))
+        if login_user.check_password(user_pw):
+            session['session_user'] = user_email
+            session['logged_in'] = True
+            app_user.reset_all(login_user.email, login_user.pw_hash, login_user.fname, login_user.lname)
+            return redirect(url_for('home'))  
+        else:
+            flash("Username or password was incorrect")
+            return redirect(url_for('login')) 
 
-        # create account
-        elif request.form['auth'] == 'create_account':
+        ### when the user wants to create an account
+        if request.form['auth'] == 'create_account':
             print('create_account--- form has been sent :D')
 
             # TO-DO : validation of the form is required EACH
@@ -64,57 +103,183 @@ def login():
             lname = request.form['create_account_lname']
 
             temp_user = User(email, pw, fname, lname, 0)
-            app_user = temp_user
-            repo.create_user(app_user)             
+            repo.create_user(temp_user)             
             
             return render_template('login.html', message=Markup("<div style='color:#f00;'>Thank you for create an account! </div>"))
-
         pass
-    return render_template('login.html', message="Hello! ")
-
-
-
-
+        
 
 ### *********************************************************************************************************************
 ### #######################################                 HOME PAGE                 ####################################
 ### *********************************************************************************************************************
 @app.route('/home', methods=['GET', 'POST'])
 def home():
-    global app_user
+    # global app_user
     global trip_id
 
     if 'logout' in request.form:
         session.pop('username', None)
         return redirect(url_for('start'))
 
+    
 
-    if request.method == 'GET':  # ------------------------------------------------------------------------------------------------ GET
+    if request.method == 'GET': 
 
-        trip_id = get_auto_gen_trip_id( str(datetime.utcnow()), app_user.get_email())
+        if session.get('logged_in') and session['logged_in'] == True :
+            trip_id = get_auto_gen_trip_id( str(datetime.utcnow()), app_user.get_email())
 
-        admin_result = repo.get_trip_admins(app_user.get_email())  # list of admin trip_id(s)      
+            trips_output = [] # set empty str
+            admin_result = repo.get_trip_list(app_user.get_email(), True)  # list of admin trip_id(s) in 'user' table
+            user_result = repo.get_trip_list(app_user.get_email(), False)  # list of user trip_id(s) in 'user' table
+            
 
-        ## from Database Table 'trips' to table view (html)
-        admin_list = []
-        for each in admin_result:
-            admin_list.append(repo.get_admin_trips(each))
-        trips_output = Markup(get_trips_in_table(admin_list))
+            if not admin_result or admin_result[0] == 'None' :
+                pass
+            else:
+                ## 'admin_list' from Database Table 'trips' to table view (html)
+                admin_list = []
+                for each in admin_result:
+                    admin_list.append(repo.get_trips_from_trips_table(each))
+                trips_output.append(get_trips_in_table(admin_list, True))
+                pass
+
+            if not user_result or user_result[0] == 'None':
+                pass
+            else:
+                ## 'user_list' from Database Table 'trips' to table view (html)
+                user_list = []
+                for each in user_result:
+                    user_list.append(repo.get_trips_from_trips_table(each))
+                trips_output.append(get_trips_in_table(user_list, False))
+                pass
+
+            trips_output = Markup(" ".join(trips_output))
+
+            return render_template(
+            'index.html',
+            title='Home Page',
+            user_name = app_user.get_fname() ,
+            travel_id = travel_id,
+            auto_gen_trip_id = trip_id,
+            show_trip_list = trips_output,
+            year=datetime.now().year
+            )
+            pass
+        else:
+            print("failed to auth handling")
+            pass
+
+    elif request.method == 'POST':  
+
+        
+        ## Add Existing Trip_id from aother user
+        if request.form['new_trip'] == 'add_existing':
+            print("[new_trip] = add_existing")
+            
+            # invalid input handling (TO DO)
+            existing_trip_id = request.form['existing_trip_id']  # from form
+            t = Trip(existing_trip_id, 'trip_name', app_user.get_email())  # trip_id, trip_name, user_id(email)
+            repo.add_trip_name(t, False)
+            
+
+            ##     *****************************    START
+            trip_id = get_auto_gen_trip_id( str(datetime.utcnow()), app_user.get_email())
+
+            trips_output = [] # set empty str
+            admin_result = repo.get_trip_list(app_user.get_email(), True)  # list of admin trip_id(s) in 'user' table
+            user_result = repo.get_trip_list(app_user.get_email(), False)  # list of user trip_id(s) in 'user' table
+            
+
+            if not admin_result or admin_result[0] == 'None' :
+                pass
+            else:
+                ## 'admin_list' from Database Table 'trips' to table view (html)
+                admin_list = []
+                for each in admin_result:
+                    admin_list.append(repo.get_trips_from_trips_table(each))
+                trips_output.append(get_trips_in_table(admin_list, True))
+                pass
+
+            if not user_result or user_result[0] == 'None':
+                pass
+            else:
+                ## 'user_list' from Database Table 'trips' to table view (html)
+                user_list = []
+                for each in user_result:
+                    user_list.append(repo.get_trips_from_trips_table(each))
+                trips_output.append(get_trips_in_table(user_list, False))
+                pass
+
+            trips_output = Markup(" ".join(trips_output))
+
+            return render_template(
+            'index.html',
+            title='Home Page',
+            user_name = app_user.get_fname() ,
+            travel_id = travel_id,
+            auto_gen_trip_id = trip_id,
+            show_trip_list = trips_output,
+            year=datetime.now().year
+            )
+            ##    *****************************    END
 
 
-        return render_template(
-        'index.html',
-        title='Home Page',
-        user_name = app_user.get_fname() ,
-        travel_id = travel_id,
-        auto_gen_trip_id = trip_id,
-        show_trip_list = trips_output,
-        year=datetime.now().year
-        )
-    elif request.method == 'POST':  # ------------------------------------------------------------------------------------------------ POST -----------------------------------
 
-        # invalid input handling
-        trip_name = request.form['new_trip_name']
+
+        elif request.form['new_trip'] == 'create_new':
+
+            print("[new_trip] = create_new")
+            
+            # invalid input handling (TO DO)
+            trip_name = request.form['new_trip_name']
+
+            t = Trip(trip_id, trip_name, app_user.get_email())
+            repo.add_trip_name(t, True)
+                       
+           
+            ##     *****************************    START
+            trip_id = get_auto_gen_trip_id( str(datetime.utcnow()), app_user.get_email())
+
+            trips_output = [] # set empty str
+            admin_result = repo.get_trip_list(app_user.get_email(), True)  # list of admin trip_id(s) in 'user' table
+            user_result = repo.get_trip_list(app_user.get_email(), False)  # list of user trip_id(s) in 'user' table
+            
+
+            if not admin_result or admin_result[0] == 'None' :
+                pass
+            else:
+                ## 'admin_list' from Database Table 'trips' to table view (html)
+                admin_list = []
+                for each in admin_result:
+                    admin_list.append(repo.get_trips_from_trips_table(each))
+                trips_output.append(get_trips_in_table(admin_list, True))
+                pass
+
+            if not user_result or user_result[0] == 'None':
+                pass
+            else:
+                ## 'user_list' from Database Table 'trips' to table view (html)
+                user_list = []
+                for each in user_result:
+                    user_list.append(repo.get_trips_from_trips_table(each))
+                trips_output.append(get_trips_in_table(user_list, False))
+                pass
+
+            trips_output = Markup(" ".join(trips_output))
+
+            return render_template(
+            'index.html',
+            title='Home Page',
+            user_name = app_user.get_fname() ,
+            travel_id = travel_id,
+            auto_gen_trip_id = trip_id,
+            show_trip_list = trips_output,
+            year=datetime.now().year
+            )
+            ##    *****************************    END 
+
+
+        
         if( is_bad_str(trip_name) ):
             msg = "WRONG INPUT: please try again to create a trip list"
             return render_template('wrongInputTrip.html',
@@ -124,29 +289,6 @@ def home():
             
 
                         
-        t = Trip(trip_id, trip_name, app_user.get_email())
-        repo.add_trip_name(t)
-
-        admin_result = repo.get_trip_admins(app_user.get_email())  # list of admin trip_id(s)      
-
-        # if already used trip_id, create a new trip_id
-        trip_id = get_auto_gen_trip_id( str(datetime.utcnow()), app_user.get_email())
-
-        ## from Database Table 'trips' to table view (html)
-        admin_list = []
-        for each in admin_result:
-            admin_list.append(repo.get_admin_trips(each))
-        trips_output = Markup(get_trips_in_table(admin_list))
-
-        return render_template(
-        'index.html',
-        title='Home Page',
-        user_name = app_user.get_fname() ,
-        travel_id = travel_id,
-        auto_gen_trip_id = trip_id,
-        show_trip_list = trips_output,
-        year=datetime.now().year,
-        )
 
 
 ### *********************************************************************************************************************
@@ -343,10 +485,19 @@ def get_auto_gen_trip_id(temp_trip_id, temp_user_id):
     return str(re.sub(r'[\W]+', '', temp_user_id+temp_trip_id))
 
 
-def get_trips_in_table(admin_list):
+def get_trips_in_table(trip_list, admin): 
+    
+    if admin:
+        button_color = """btn btn-success btn-sm pull-right"""
+        button_text = """Admin View"""
+    else:
+        button_color = """btn btn-default btn-sm pull-right"""
+        button_text = """User View"""
+    
+
     trips_output_text_line = ""
     temp_trip_id = "temp trip id"
-    for event in admin_list:
+    for event in trip_list:
         turn = False
         t_add = """<tr><td>"""
         trips_output_text_line += t_add
@@ -357,16 +508,16 @@ def get_trips_in_table(admin_list):
             t_add = cell + """ </td><td>"""
             trips_output_text_line += t_add
                 
-        t_add = """<td><button type="button" class="btn btn-success btn-sm pull-right" onclick="location.href = '/trip/"""
+        t_add = """<td><button type="button" class=" """ + button_color + """ " onclick="location.href = '/trip/"""
         trips_output_text_line += t_add
         trips_output_text_line += str(temp_trip_id)
                     
-        t_add = """';">View Details</button></td>
+        t_add = """';">""" + button_text + """</button></td>
                 </td>
                     </tr>
                 """
         trips_output_text_line += t_add
-    return trips_output_text_line
+    return trips_output_text_line    # string
 
 
 

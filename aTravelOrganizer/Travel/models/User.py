@@ -13,6 +13,13 @@ class User(object):
         self.fname = first_name
         self.lname = last_name
 
+    def reset_all(self,  email, password, first_name, last_name):
+        self.email = email  # user id == user email
+        self.pw_hash = password
+        self.fname = first_name
+        self.lname = last_name
+        pass
+
     def check_password(self, password):
         return check_password_hash(self.pw_hash, password)
 
