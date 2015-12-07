@@ -6,6 +6,18 @@
     <!-- show only when it is admin (for add new fields) -->
     {{admin_button}}
     
+    <!-- error handling w/flash : start -->
+    <br /><br /><br /><br />
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message_error in messages %}
+    <div class="alert alert-warning">
+        {{ message_error }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <!-- error handling w/flash : end  -->
 
 
     <br /><br />

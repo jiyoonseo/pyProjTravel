@@ -173,7 +173,7 @@ def account():
         ### @3 set user_obj with newly retrieved information (together with @2)
 
         flash_list = []
-
+        update_success = False
         # only password is required in this page...
         if request.form['login_pw']:
             
@@ -186,6 +186,7 @@ def account():
                     app_user.email = request.form['account_email']
                     session['session_user'] = app_user.email
                 """
+                update_success = True
 
                 # not required..
                 if request.form['account_fname']:
@@ -193,17 +194,25 @@ def account():
                 
                 # not required..
                 if request.form['account_lname']:
-                    app_user.fname = request.form['account_lname']
+                    app_user.lname = request.form['account_lname']
                 
                 # not required..
                 if request.form['create_new_pw'] and request.form['confirm_new_pw']:
                     if request.form['create_new_pw'] == request.form['confirm_new_pw']:
-                        app_user.set_password(request.form['create_new_pw'])
-                    pass
-                
-                repo.update_user(app_user, old_username)
-                flash("Your information has been saved SUCCESSFULLY!")
+                        app_user.set_password(request.form['create_new_pw'])                    
+                    else:
+                        flash("New Password and Password Confirmation is not matched.")
+                        update_success = False
+                        
+                if not update_success:
+                    flash("Your information has not been saved!")
+                else:
+                    repo.update_user(app_user, old_username)
+                    flash("Updated Successfully!")
 
+                pass
+            else:
+                flash("Current Password is not correct. Please try again.")
                 pass
         
         else:
@@ -306,18 +315,25 @@ def home():
         ## Add Existing Trip_id from aother user
         if request.form['new_trip'] == 'add_existing':
                         
-            # invalid input handling (TO DO)
-            existing_trip_id = request.form['existing_trip_id']  # from form
-            current_datetime = datetime.now().strftime('%Y-%m-%dT%H:%M')
-            t = Trip(existing_trip_id, 'trip_name', app_user.get_email(), current_datetime, current_datetime)  # trip_id, trip_name, user_id(email)
+            # invalid input handling 
+            existing_trip_id = ""
+            if request.form['existing_trip_id']:
+                existing_trip_id = request.form['existing_trip_id'] 
+                current_datetime = datetime.now().strftime('%Y-%m-%dT%H:%M')
+                t = Trip(existing_trip_id, 'trip_name', app_user.get_email(), current_datetime, current_datetime)  # trip_id, trip_name, user_id(email)
 
-            # check if the trip_id is existing ? (True or False)
-            # repo.check_exist_trip(existing_trip_id) # True or False
-            if repo.check_exist_trip(existing_trip_id):
-                repo.add_trip_name(t, False)
+                # check if the trip_id is existing ? (True or False)
+                # repo.check_exist_trip(existing_trip_id) # True or False
+                if repo.check_exist_trip(existing_trip_id):
+                    repo.add_trip_name(t, False)
+                else:
+                    flash_line = "The Trip Id '" + existing_trip_id + "' is not found. Please try again." 
+                    flash(flash_line)
+                pass
             else:
-                flash_line = "The Trip Id '" + existing_trip_id + "' is not found. Please try again." 
-                flash(flash_line)
+                flash("Please Enter Existing Trip Id")
+                pass
+
             
 
             ##     *****************************    START
@@ -379,11 +395,15 @@ def home():
         elif request.form['new_trip'] == 'create_new':
                         
             # invalid input handling (TO DO)
-            trip_name = request.form['new_trip_name']
+            trip_name = ""
 
-            current_datetime = datetime.now().strftime('%Y-%m-%dT%H:%M')
-            t = Trip(trip_id, trip_name, app_user.get_email(), current_datetime, current_datetime)
-            repo.add_trip_name(t, True)
+            if request.form['new_trip_name']:
+                trip_name = request.form['new_trip_name']
+                current_datetime = datetime.now().strftime('%Y-%m-%dT%H:%M')
+                t = Trip(trip_id, trip_name, app_user.get_email(), current_datetime, current_datetime)
+                repo.add_trip_name(t, True)
+            else:
+                flash("Please Enter Trip Name.")
             
            
             ##     *****************************    START
@@ -507,121 +527,128 @@ def trip(trip_id):
     elif request.method == 'POST':   # ------------------------------------------------------------------------------------------------ POST
 
         # retrieve lists
-        flights = request.values.getlist('flight')
-        
-        flights_dt = request.values.getlist('flight_datetime')
-        hotels = request.values.getlist('hotel')
-        hotels_dt = request.values.getlist('hotel_datetime')
-        places = request.values.getlist('place')
-        places_dt = request.values.getlist('place_datetime')
 
-        f_obj_list = []
-        h_obj_list = []
-        p_obj_list = []        
+        if request.values.getlist('flight') and request.values.getlist('flight_datetime') and request.values.getlist('hotel')  and request.values.getlist('hotel_datetime') and request.values.getlist('place') and request.values.getlist('place_datetime'):
+            
+            flights = request.values.getlist('flight')        
+            flights_dt = request.values.getlist('flight_datetime')
+            hotels = request.values.getlist('hotel')
+            hotels_dt = request.values.getlist('hotel_datetime')
+            places = request.values.getlist('place')
+            places_dt = request.values.getlist('place_datetime')
 
-        # save respective objs in lists
-        if(len(flights)!= 0 and len(flights)==len(flights_dt)):
-            for i in range(len(flights)):
+            f_obj_list = []
+            h_obj_list = []
+            p_obj_list = []        
 
-                # input validation 
-                if(not is_valid_datetime(flights_dt[i]) or is_bad_str(flights[i]) ):
-                    msg = ""
-                    if(not is_valid_datetime(flights_dt[i])):
-                        msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Flight Date/Time' field</p>"
-                    if(is_bad_str(flights[i])):
-                        msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Flight Name' field</p>"
+            # save respective objs in lists
+            if(len(flights)!= 0 and len(flights)==len(flights_dt)):
+                for i in range(len(flights)):
+
+                    # input validation 
+                    if(not is_valid_datetime(flights_dt[i]) or is_bad_str(flights[i]) ):
+                        msg = ""
+                        if(not is_valid_datetime(flights_dt[i])):
+                            msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Flight Date/Time' field</p>"
+                        if(is_bad_str(flights[i])):
+                            msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Flight Name' field</p>"
                     
-                    return render_template('wrongInputField.html',
-                                           trip_id= trip_id,
-                                            user_name = user_name,
-                                            acc = "'s Account" if session['log'] else "",
-                                            log_in_out = 'Log Out' if session['log'] else 'Log In',
-                                            msg = Markup(msg)
-                                            )
+                        return render_template('wrongInputField.html',
+                                               trip_id= trip_id,
+                                                user_name = user_name,
+                                                acc = "'s Account" if session['log'] else "",
+                                                log_in_out = 'Log Out' if session['log'] else 'Log In',
+                                                msg = Markup(msg)
+                                                )
             
 
-                f_obj = Flight(trip_id, flights_dt[i], flights[i] )  # create a Flight obj
-                url = 'https://flightaware.com/live/flight/' + str(f_obj.info)
-                req = req = requests.get(url)
-                soup = BeautifulSoup(req.text, "html.parser")
-                flight_state = []  # from website https://flightware.com/live/flight/
-                for each in soup.findAll("td", {"class": "smallrow1"}):
-                    flight_state.append(each.text)
+                    f_obj = Flight(trip_id, flights_dt[i], flights[i] )  # create a Flight obj
+                    url = 'https://flightaware.com/live/flight/' + str(f_obj.info)
+                    req = req = requests.get(url)
+                    soup = BeautifulSoup(req.text, "html.parser")
+                    flight_state = []  # from website https://flightware.com/live/flight/
+                    for each in soup.findAll("td", {"class": "smallrow1"}):
+                        flight_state.append(each.text)
 
                 
-                if(len(flight_state) == 0):
-                    f_obj.status="NOT AVAILABLE"
-                else:  # flight information is good to go
-                    f_obj.status = str(re.sub(r'\([^)]*\)', '', flight_state[0]))    
+                    if(len(flight_state) == 0):
+                        f_obj.status="NOT AVAILABLE"
+                    else:  # flight information is good to go
+                        f_obj.status = str(re.sub(r'\([^)]*\)', '', flight_state[0]))    
 
-                f_obj_list.append(f_obj)
+                    f_obj_list.append(f_obj)
 
-        if(len(hotels)!= 0 and len(hotels)==len(hotels_dt)):
-            for i in range(len(hotels)):
-                # input validation 
-                if(not is_valid_datetime(hotels_dt[i]) or is_bad_str(hotels[i]) ):
-                    msg = ""
-                    if(not is_valid_datetime(hotels_dt[i])):
-                        msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Hotel Date/Time' field</p>"
-                    if(is_bad_str(hotels[i])):
-                        msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Hotel Name' field</p>"
+            if(len(hotels)!= 0 and len(hotels)==len(hotels_dt)):
+                for i in range(len(hotels)):
+                    # input validation 
+                    if(not is_valid_datetime(hotels_dt[i]) or is_bad_str(hotels[i]) ):
+                        msg = ""
+                        if(not is_valid_datetime(hotels_dt[i])):
+                            msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Hotel Date/Time' field</p>"
+                        if(is_bad_str(hotels[i])):
+                            msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Hotel Name' field</p>"
                     
-                    return render_template('wrongInputField.html',
-                                            trip_id= trip_id,
-                                            user_name = user_name,
-                                            acc = "'s Account" if session['log'] else "",
-                                            log_in_out = 'Log Out' if session['log'] else 'Log In',
-                                            msg = Markup(msg)
-                                            )
+                        return render_template('wrongInputField.html',
+                                                trip_id= trip_id,
+                                                user_name = app_user.fname,
+                                                acc = "'s Account" if session['log'] else "",
+                                                log_in_out = 'Log Out' if session['log'] else 'Log In',
+                                                msg = Markup(msg)
+                                                )
 
-                h_obj = Hotel(trip_id, hotels_dt[i], hotels[i] )
-                h_obj_list.append(h_obj)
+                    h_obj = Hotel(trip_id, hotels_dt[i], hotels[i] )
+                    h_obj_list.append(h_obj)
 
-        if(len(places)!= 0 and len(places)==len(places_dt)):
-            for i in range(len(places)):
-                # input validation 
-                if(not is_valid_datetime(places_dt[i]) or is_bad_str(places[i]) ):
-                    msg = ""
-                    if(not is_valid_datetime(places_dt[i])):
-                        msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Place Date/Time' field</p>"
-                    if(is_bad_str(places[i])):
-                        msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Place Name' field</p>"
+            if(len(places)!= 0 and len(places)==len(places_dt)):
+                for i in range(len(places)):
+                    # input validation 
+                    if(not is_valid_datetime(places_dt[i]) or is_bad_str(places[i]) ):
+                        msg = ""
+                        if(not is_valid_datetime(places_dt[i])):
+                            msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Place Date/Time' field</p>"
+                        if(is_bad_str(places[i])):
+                            msg = msg + "<p style='color:#f00'><b>INVALID INPUT:</b> please try again to create a trip 'Place Name' field</p>"
                     
-                    return render_template('wrongInputField.html',
-                                            trip_id= trip_id,
-                                            user_name = user_name,
-                                            acc = "'s Account" if session['log'] else "",
-                                            log_in_out = 'Log Out' if session['log'] else 'Log In',
-                                            msg = Markup(msg)
-                                            )
+                        return render_template('wrongInputField.html',
+                                                trip_id= trip_id,
+                                                user_name = user_name,
+                                                acc = "'s Account" if session['log'] else "",
+                                                log_in_out = 'Log Out' if session['log'] else 'Log In',
+                                                msg = Markup(msg)
+                                                )
 
-                p_obj = Place(trip_id, places_dt[i], places[i] )
-                p_obj_list.append(p_obj)
+                    p_obj = Place(trip_id, places_dt[i], places[i] )
+                    p_obj_list.append(p_obj)
             
-        # add to repo -> database
-        for each_flight_obj in f_obj_list:
-            repo.add_flight(each_flight_obj)
-            # update datetime start/end
-            if repo.get_trip_datetime_start(each_flight_obj) > each_flight_obj.datetime:
-                repo.update_trip_datetime_start(each_flight_obj.datetime, each_flight_obj.travel_id)
-            if repo.get_trip_datetime_end(each_flight_obj) < each_flight_obj.datetime:
-                repo.update_trip_datetime_end(each_flight_obj.datetime, each_flight_obj.travel_id)
+            # add to repo -> database
+            for each_flight_obj in f_obj_list:
+                repo.add_flight(each_flight_obj)
+                # update datetime start/end
+                if repo.get_trip_datetime_start(each_flight_obj) > each_flight_obj.datetime:
+                    repo.update_trip_datetime_start(each_flight_obj.datetime, each_flight_obj.travel_id)
+                if repo.get_trip_datetime_end(each_flight_obj) < each_flight_obj.datetime:
+                    repo.update_trip_datetime_end(each_flight_obj.datetime, each_flight_obj.travel_id)
                 
-        for each_hotel_obj in h_obj_list:
-            repo.add_hotel(each_hotel_obj)
-            # update datetime start/end
-            if repo.get_trip_datetime_start(each_hotel_obj) > each_hotel_obj.datetime:
-                repo.update_trip_datetime_start(each_hotel_obj.datetime, each_hotel_obj.travel_id)
-            if repo.get_trip_datetime_end(each_hotel_obj) < each_hotel_obj.datetime:
-                repo.update_trip_datetime_end(each_hotel_obj.datetime, each_hotel_obj.travel_id)
+            for each_hotel_obj in h_obj_list:
+                repo.add_hotel(each_hotel_obj)
+                # update datetime start/end
+                if repo.get_trip_datetime_start(each_hotel_obj) > each_hotel_obj.datetime:
+                    repo.update_trip_datetime_start(each_hotel_obj.datetime, each_hotel_obj.travel_id)
+                if repo.get_trip_datetime_end(each_hotel_obj) < each_hotel_obj.datetime:
+                    repo.update_trip_datetime_end(each_hotel_obj.datetime, each_hotel_obj.travel_id)
 
-        for each_place_obj in p_obj_list:
-            repo.add_place(each_place_obj)
-            # update datetime start/end
-            if repo.get_trip_datetime_start(each_place_obj) > each_place_obj.datetime:
-                repo.update_trip_datetime_start(each_place_obj.datetime, each_place_obj.travel_id)
-            if repo.get_trip_datetime_end(each_place_obj) < each_place_obj.datetime:
-                repo.update_trip_datetime_end(each_place_obj.datetime, each_place_obj.travel_id)
+            for each_place_obj in p_obj_list:
+                repo.add_place(each_place_obj)
+                # update datetime start/end
+                if repo.get_trip_datetime_start(each_place_obj) > each_place_obj.datetime:
+                    repo.update_trip_datetime_start(each_place_obj.datetime, each_place_obj.travel_id)
+                if repo.get_trip_datetime_end(each_place_obj) < each_place_obj.datetime:
+                    repo.update_trip_datetime_end(each_place_obj.datetime, each_place_obj.travel_id)
+
+
+        else: # when one of field is empty
+            flash("Please fill out all the fields.")
+            
 
         # time to display
         output = ""
@@ -639,7 +666,7 @@ def trip(trip_id):
             output += add
             for cell in event:
                 add =  cell + """</td>
-                                 <td>"""
+                                    <td>"""
                 output += add
 
             add = """</td>
@@ -658,6 +685,7 @@ def trip(trip_id):
                 user_name = app_user.get_fname(),
                 # travel_id = travel_id,
                 trip_id = trip_id,
+                trip_name = repo.get_trip_name(trip_id),
                 admin_button = Markup(admin_button),
                 sorted_result = output,
                 acc = "'s Account" if session['log'] else "",
