@@ -1,0 +1,74 @@
+﻿
+<div class="row center-block" id="display_account">
+    <form method="post" class="form-horizontal center-block ">
+
+        <div class="row col-lg-12 center-block">
+
+            <div class="form-group ">
+                <label for="account_fname" class="col-xs-4 control-label">First Name</label>
+                <div class="col-xs-8">
+                    <input type="text" class="form-control" id="account_fname" name="account_fname" placeholder="{{user_name}}" >
+                </div>
+            </div>
+
+            <div class="form-group ">
+                <label for="account_lname" class="col-xs-4 control-label">Last Name</label>
+                <div class="col-xs-8">
+                    <input type="text" class="form-control" id="account_lname" name="account_lname" placeholder="{{user_lname}}" >
+                </div>
+            </div>
+
+
+            <div class="form-group ">
+                <label for="account_email" class="col-xs-4 control-label">Email</label>
+                <div class="col-xs-8">
+                    <input type="email" class="form-control" id="account_email" name="account_email" placeholder="{{user_email}}" >
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label for="login_pw" class="col-xs-4 control-label">Password</label>
+                <div class="col-xs-8">
+                    <input type="password" class="form-control" id="create_login_pw" name="create_login_pw" placeholder="Enter Password" required>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label for="create_new_pw" class="col-xs-4 control-label">New Password</label>
+                <div class="col-xs-8">
+                    <input type="password" class="form-control" id="create_new_pw" name="create_new_pw" placeholder="New Password" >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_new_pw" class="col-xs-4 control-label">Confirm Password</label>
+                <div class="col-xs-8">
+                    <input type="password" class="form-control" id="confirm_new_pw" name="confirm_new_pw" placeholder="Confirm Password" >
+                </div>
+            </div>
+
+
+            <div class="text-center col-lg-8 col-md-8 col-sm-10 col-xs-10">
+                
+                <button type="submit" class="btn btn-primary pull-right" name="auth" value="update_account">Save</button>
+            </div>
+
+            <div class="row">
+
+            </div>
+        </div>
+    </form>
+    <!-- error handling -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message_error in messages %}
+    <div class="alert alert-warning">
+        {{ message_error }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+</div>
