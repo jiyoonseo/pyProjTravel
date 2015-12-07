@@ -32,6 +32,8 @@ def login_required(f):
 
 
 
+#login_logout = "Log In" # global login_logout
+
 # travel_id = "ok whatever"
 # user_id = "user_js_01"
 # user_name = "happy tree"
@@ -39,10 +41,9 @@ def login_required(f):
 @app.route('/')  # temp --> remove later
 @app.route('/logout')
 def logout():
-    print("logout !!!")
     session.pop('session_user', None)
     session.pop('logged_in', None)
-    print("logout -- done")
+    session['log'] = False
     return redirect(url_for('login'))  
 
 
@@ -53,52 +54,93 @@ def logout():
 # @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods =['GET','POST'])
 def login():
-    # global app_user
-    # session required
-    print('login page..')
-
-
+    
     if request.method == 'GET' and session.get('session_user') is None :
-        print("BOTH == NONE")
+        
+        return render_template('login.html', 
+                               acc = "'s Account" if session['log'] else "",
+                               log_in_out = 'Log Out' if session['log'] else 'Log In')
 
-        return render_template('login.html')
     elif request.method == 'POST':
-
-
         if request.form['auth'] == 'login':
             user_email = request.form['login_email']
             user_pw = request.form['login_pw']
+
             ### after having useremail && password 
             login_user = repo.get_user_obj(user_email)
             if not login_user :
                 flash("Username is not found in database. Please create an account.")
                 return redirect(url_for('login'))                
-                pass
+                
             else: # when user account is found
-                print("login_user found :D")
+                print("login_user FOUND")
                 if login_user.check_password(user_pw):
                     session['session_user'] = user_email
                     session['logged_in'] = True
+                    session['log'] = True
+                                        
                     app_user.reset_all(login_user.email, login_user.pw_hash, login_user.fname, login_user.lname)
                     return redirect(url_for('home'))  
+
                 else:  # inaccurate password
                     flash("Username/Password was incorrect")
                     return redirect(url_for('login')) 
                 pass
         elif request.form['auth'] == 'create_account':
-            print('******************************************************************')
-            print('create_account--- form has been sent :D')
-
-            # TO-DO : validation of the form is required EACH
-            email = request.form['create_login_email'] 
-            pw = request.form['create_login_pw']   
-            fname = request.form['create_account_fname']
-            lname = request.form['create_account_lname']
-
-            temp_user = User(email, pw, fname, lname, 0)
-            repo.create_user(temp_user)             
             
-            return render_template('login.html', message=Markup("<div style='color:#f00;'>Thank you for create an account! </div>"))
+            print('create_account--- form has been sent')
+
+            email = pw = fname = lname = None
+
+            # required forms.. form validation
+            
+            if request.form['create_login_email'] :
+                email = request.form['create_login_email'] 
+                if re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email) != None:
+                    pass
+                else:
+                    email = None
+                    flash("Email is invalid.")
+                pass
+            else:
+                flash("Email is required to create an account. Please try again.")
+                pass
+
+            if request.form['create_login_pw'] and request.form['create_login_pw'] == request.form['confirm_login_pw']:
+                pw = request.form['create_login_pw']   
+                pass
+            elif not request.form['create_login_pw'] or not request.form['confirm_login_pw']:
+                flash("Password and Password Confirmation is required to create an account. Please try again.")
+                pass
+            elif request.form['create_login_pw'] != request.form['confirm_login_pw']:
+                flash("Password and Password Confirmation should be matched to create an account. Please try again.")
+                pass
+
+            if request.form['create_account_fname'] :
+                fname = request.form['create_account_fname']
+                pass
+            else:
+                flash("First Name is required to create an account. Please try again.")
+                pass
+
+            if request.form['create_account_lname'] :
+                lname = request.form['create_account_lname']
+                pass
+            else:
+                flash("Last Name is required to create an account. Please try again.")
+                pass
+
+
+            successful_create = False
+            if email and pw and fname and lname:
+                temp_user = User(email, pw, fname, lname, 0)
+                repo.create_user(temp_user)    
+                successful_create = True    
+
+            
+            return render_template('login.html', message=Markup("<div style='color:#f0f;'>Thank you for create an account! </div>") if successful_create else Markup("<div style='color:#f00;'>Failed to create an account. </div>"),
+                                   acc = "'s Account" if session['log'] else "",
+                                   log_in_out = 'Log Out' if session['log'] else 'Log In')
             pass
 
      
@@ -111,7 +153,7 @@ def login():
 @app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
-    
+    global login_logout
     if request.method == 'GET':
 
         
@@ -119,13 +161,63 @@ def account():
                                user_name = app_user.fname, 
                                user_lname = app_user.lname , 
                                user_email = app_user.get_email(),
-                               log_in_out = "Log Out",
+                               acc = "'s Account" if session['log'] else "",
+                               log_in_out = 'Log Out' if session['log'] else 'Log In',
                                year=datetime.now().year)
         
     elif request.method == 'POST':
+
+        ### TO DO 's
+        ### @1 after validation, 
+        ### @2 update table with new user_obj
+        ### @3 set user_obj with newly retrieved information (together with @2)
+
+        flash_list = []
+
+        # only password is required in this page...
+        if request.form['login_pw']:
+            
+            old_username = app_user.email # temp save in case user change his/her username
+            # validate password
+            if app_user.check_password(request.form['login_pw']):               
+                
+                """
+                if request.form['account_email']:
+                    app_user.email = request.form['account_email']
+                    session['session_user'] = app_user.email
+                """
+
+                # not required..
+                if request.form['account_fname']:
+                    app_user.fname = request.form['account_fname']
+                
+                # not required..
+                if request.form['account_lname']:
+                    app_user.fname = request.form['account_lname']
+                
+                # not required..
+                if request.form['create_new_pw'] and request.form['confirm_new_pw']:
+                    if request.form['create_new_pw'] == request.form['confirm_new_pw']:
+                        app_user.set_password(request.form['create_new_pw'])
+                    pass
+                
+                repo.update_user(app_user, old_username)
+                flash("Your information has been saved SUCCESSFULLY!")
+
+                pass
+        
+        else:
+            flash("You MUST provide your current password to securely update your information.")
+            pass
+
+        
+
         return render_template('account.html', 
                                user_name = app_user.fname, 
-                               log_in_out = "Log Out",
+                               user_lname = app_user.lname , 
+                               user_email = app_user.get_email(),
+                               acc = "'s Account" if session['log'] else "",
+                               log_in_out = 'Log Out' if session['log'] else 'Log In',
                                year=datetime.now().year)
         
 
@@ -142,6 +234,7 @@ trip_id = ""  # need it as global for auto-gen key
 @app.route('/home', methods=['GET', 'POST'])
 @login_required
 def home():
+    #global login_logout
     global trip_id
     if request.method == 'GET': 
 
@@ -185,7 +278,7 @@ def home():
                 sorted_by_datetime_all = sorted(all_users, key=lambda tup: tup[3])
                 trips_output = Markup(get_trips_in_table(sorted_by_datetime_all))
             else:
-                trips_output = "No Trip was found"
+                trips_output = "Create or Add your First Trip!"
                 
             
             ### END..........................................
@@ -197,6 +290,8 @@ def home():
             title='Home Page',
             user_name = app_user.get_fname() ,
             auto_gen_trip_id = trip_id,
+            acc = "'s Account" if session['log'] else "",
+            log_in_out = 'Log Out' if session['log'] else 'Log In',
             show_trip_list = trips_output,
             year=datetime.now().year
             )
@@ -210,8 +305,7 @@ def home():
         
         ## Add Existing Trip_id from aother user
         if request.form['new_trip'] == 'add_existing':
-            print("[new_trip] = add_existing")
-            
+                        
             # invalid input handling (TO DO)
             existing_trip_id = request.form['existing_trip_id']  # from form
             current_datetime = datetime.now().strftime('%Y-%m-%dT%H:%M')
@@ -263,7 +357,7 @@ def home():
                 sorted_by_datetime_all = sorted(all_users, key=lambda tup: tup[3])
                 trips_output = Markup(get_trips_in_table(sorted_by_datetime_all))
             else:
-                trips_output = "No Trip was found"
+                trips_output = "Create or Add your First Trip!"
                 
 
             return render_template(
@@ -273,6 +367,8 @@ def home():
             # travel_id = travel_id,
             auto_gen_trip_id = trip_id,
             show_trip_list = trips_output,
+            acc = "'s Account" if session['log'] else "",
+            log_in_out = 'Log Out' if session['log'] else 'Log In',
             year=datetime.now().year
             )
             ##    *****************************    END
@@ -281,9 +377,7 @@ def home():
 
 
         elif request.form['new_trip'] == 'create_new':
-
-            print("[new_trip] = create_new")
-            
+                        
             # invalid input handling (TO DO)
             trip_name = request.form['new_trip_name']
 
@@ -329,7 +423,7 @@ def home():
                 sorted_by_datetime_all = sorted(all_users, key=lambda tup: tup[3])
                 trips_output = Markup(get_trips_in_table(sorted_by_datetime_all))
             else:
-                trips_output = "No Trip was found"
+                trips_output = "Create or Add your First Trip!"
 
             return render_template(
             'index.html',
@@ -338,6 +432,8 @@ def home():
             # travel_id = travel_id,
             auto_gen_trip_id = trip_id,
             show_trip_list = trips_output,
+            acc = "'s Account" if session['log'] else "",
+            log_in_out = 'Log Out' if session['log'] else 'Log In',
             year=datetime.now().year
             )
             ##    *****************************    END 
@@ -354,6 +450,7 @@ def home():
 
                         
 def get_trip_events_in_table(trip_id):
+    global login_logout
     output = ""
     travel_result = repo.get_travel_events(trip_id)  # list of tuples
 
@@ -392,7 +489,6 @@ def trip(trip_id):
 
         # get admin_user_id
         admin_user_of_this_trip = repo.get_admin_user_id(trip_id)
-        print("check check check check check check check check check check check check check check check check")
 
         admin_button = get_admin_button(trip_id, admin_user_of_this_trip)       # admin_button = Markup(admin_button),  
 
@@ -404,15 +500,14 @@ def trip(trip_id):
         trip_name = repo.get_trip_name(trip_id),
         admin_button = Markup(admin_button),
         sorted_result = output,
+        acc = "'s Account" if session['log'] else "",
+        log_in_out = 'Log Out' if session['log'] else 'Log In',
         year=datetime.now().year,
         )
     elif request.method == 'POST':   # ------------------------------------------------------------------------------------------------ POST
 
         # retrieve lists
         flights = request.values.getlist('flight')
-        print(type(flights))
-        print(len(flights))
-        print(flights)
         
         flights_dt = request.values.getlist('flight_datetime')
         hotels = request.values.getlist('hotel')
@@ -439,6 +534,8 @@ def trip(trip_id):
                     return render_template('wrongInputField.html',
                                            trip_id= trip_id,
                                             user_name = user_name,
+                                            acc = "'s Account" if session['log'] else "",
+                                            log_in_out = 'Log Out' if session['log'] else 'Log In',
                                             msg = Markup(msg)
                                             )
             
@@ -455,7 +552,6 @@ def trip(trip_id):
                 if(len(flight_state) == 0):
                     f_obj.status="NOT AVAILABLE"
                 else:  # flight information is good to go
-                    print(flight_state)  # keep going  & show live flight info
                     f_obj.status = str(re.sub(r'\([^)]*\)', '', flight_state[0]))    
 
                 f_obj_list.append(f_obj)
@@ -473,6 +569,8 @@ def trip(trip_id):
                     return render_template('wrongInputField.html',
                                             trip_id= trip_id,
                                             user_name = user_name,
+                                            acc = "'s Account" if session['log'] else "",
+                                            log_in_out = 'Log Out' if session['log'] else 'Log In',
                                             msg = Markup(msg)
                                             )
 
@@ -492,6 +590,8 @@ def trip(trip_id):
                     return render_template('wrongInputField.html',
                                             trip_id= trip_id,
                                             user_name = user_name,
+                                            acc = "'s Account" if session['log'] else "",
+                                            log_in_out = 'Log Out' if session['log'] else 'Log In',
                                             msg = Markup(msg)
                                             )
 
@@ -551,8 +651,7 @@ def trip(trip_id):
 
         # get admin_user_id
         admin_user_of_this_trip = repo.get_admin_user_id(trip_id)
-        print("check post check post check post check post check post check post check post check post check post check post check post check post ")
-
+        
         admin_button = get_admin_button(trip_id, admin_user_of_this_trip)       # admin_button = Markup(admin_button),
 
         return render_template('trip.html',
@@ -561,6 +660,8 @@ def trip(trip_id):
                 trip_id = trip_id,
                 admin_button = Markup(admin_button),
                 sorted_result = output,
+                acc = "'s Account" if session['log'] else "",
+                log_in_out = 'Log Out' if session['log'] else 'Log In',
                 year=datetime.now().year,
                 )
 
@@ -654,128 +755,6 @@ def get_trips_in_table(trip_list):
 
 
 
-
-
-
-
-
-
-
-
-### ----------------------------------------- OLD ------------------------------------------------------------------------------------------------------------------------------
-### ----------------------------------------- OLD ------------------------------------------------------------------------------------------------------------------------------
-
-@app.route('/userInput', methods=['GET', 'POST'])
-def userInput():
-
-    if request.method == 'GET':
-        return render_template('UserInput.html')
-
-    elif request.method == 'POST':         # ----------------------------------------------------------------------------------------  -------------- post
-
-        flight = Flight(travel_id, request.form['flight_datetime'], request.form['flight'] )  # request.form['flight_datetime']
-        hotel = Hotel(travel_id, request.form['hotel_datetime'], request.form['hotel'] )  # request.form['hotel_datetime']
-        place  = Place(travel_id, request.form['place_datetime'], request.form['place'] )  # request.form['place_datetime']
-
-        # return incorrect flight info page when result is not available
-        # retrieve live flight information from website (no free api I found so far..)
-        url = 'https://flightaware.com/live/flight/' + str(flight.info)
-        req = requests.get(url)
-        soup = BeautifulSoup(req.text, "html.parser")
-        flight_state = []  # from website https://flightware.com/live/flight/
-        for each in soup.findAll("td", {"class": "smallrow1"}):
-            flight_state.append(each.text)
-
-        output = """
-                <tr>
-                    <th>Event</th>
-                    <th>Detail</th>
-                    <th>Date/Time</th>
-                    <th>Status</th>
-                </tr>
-        """
-
-        if(len(flight_state) == 0):
-            flight.status="NOT AVAILABLE"
-            tl = [flight, hotel, place]
-            tl.sort(key= lambda obj: obj.datetime)            
-
-            for obj in tl:            
-                add =  """
-                            <tr>
-                                <td>""" + obj.title + """</td>
-                                <td>""" + obj.info + """</td>
-                                <td>""" + obj.datetime + """</td>
-                                <td style='color:#f00'>""" + obj.status + """</td>
-                            </tr>
-                        """
-                output += add
-            
-            output = Markup(output)
-            return render_template('IncorrectFlightInfo.html', 
-                            travel_id = travel_id, sorted_result= output
-                            )
-        else:  # flight information is good to go
-            print(flight_state)  # keep going  & show live flight info
-            flight.status = str(re.sub(r'\([^)]*\)', '', flight_state[0]))
-
-
-        repo.add_travel_info(flight, hotel, place)
-
-        # return result information when flight info is availalble 
-        # dt = datetime.datetime.strptime(flight.datetime, "%Y-%m-%dT%H:%M")  # conversion
-        
-        tl = [flight, hotel, place]
-        tl.sort(key= lambda obj: obj.datetime)
-                
-        for obj in tl:
-            
-            add =  """
-                        <tr>
-                            <td>""" + obj.title + """</td>
-                            <td>""" + obj.info + """</td>
-                            <td>""" + obj.datetime + """</td>
-                            <td style='color:#00bde4'>""" + obj.status + """</td>
-                        </tr>
-                    """
-            output += add
-            
-        output = Markup(output)
-        return render_template('ShowTravelInfo.html', 
-                               travel_id = travel_id, sorted_result= output)
-
-    return   # end of userInput()
-
-
-@app.route('/travel', methods=['GET', 'POST'])
-def travel():
-    if request.method == 'GET':
-        return render_template('ShowTravelInfo.html', travel_id = travel_id)
-    elif request.method == 'POST':
-        travel_result = repo.get_travel_events(travel_id)  # list of tuples
-        output = ""
-        for event in travel_result:
-            add = """
-                <tr>  
-                    <td>              
-            """
-            output += add
-            for cell in event:
-                add =  cell + """</td>
-                                <td>"""
-                output += add
-
-            add = """</td>
-                            </tr>
-                        """
-            output += add
-            
-        output = Markup(output)
-        return render_template('ShowTravelInfo.html', 
-                               travel_id = travel_id, sorted_result= output)
-        # return str(result_flight)
-
-    return
 
 
 

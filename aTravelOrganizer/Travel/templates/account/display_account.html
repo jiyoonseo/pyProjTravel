@@ -22,7 +22,7 @@
             <div class="form-group ">
                 <label for="account_email" class="col-xs-4 control-label">Email</label>
                 <div class="col-xs-8">
-                    <input type="email" class="form-control" id="account_email" name="account_email" placeholder="{{user_email}}" >
+                    <input type="email" class="form-control" id="account_email" name="account_email" placeholder="{{user_email}}" disabled>
                 </div>
             </div>
 
@@ -30,7 +30,7 @@
             <div class="form-group">
                 <label for="login_pw" class="col-xs-4 control-label">Password</label>
                 <div class="col-xs-8">
-                    <input type="password" class="form-control" id="create_login_pw" name="create_login_pw" placeholder="Enter Password" required>
+                    <input type="password" class="form-control" id="login_pw" name="login_pw" placeholder="Enter Password" required>
                 </div>
             </div>
 
@@ -52,7 +52,7 @@
 
             <div class="text-center col-lg-8 col-md-8 col-sm-10 col-xs-10">
                 
-                <button type="submit" class="btn btn-primary pull-right" name="auth" value="update_account">Save</button>
+                <button type="submit" class="btn btn-primary pull-right" name="user_account_save" value="update_account">Save</button>
             </div>
 
             <div class="row">
@@ -60,15 +60,6 @@
             </div>
         </div>
     </form>
-    <!-- error handling -->
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    {% for message_error in messages %}
-    <div class="alert alert-warning">
-        {{ message_error }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+
 
 </div>

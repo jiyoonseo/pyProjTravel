@@ -25,10 +25,10 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     
-                    <li><a href="{{ url_for('account') }}">{{user_name}}'s Account</a></li>
+                    <li><a href="{{ url_for('account') }}">{{user_name}}{{acc}}</a></li>
                     <li class="pull-right">
                         <form action="{{url_for('logout')}}" method="get" >
-                            <button type="submit" class="btn btn-default" name="logout" value="logout" style="margin-top: 10px;">Log Out  {{log_in_out}}</button>
+                            <button type="submit" class="btn btn-default" name="logout" value="logout" style="margin-top: 10px;">{{log_in_out}}</button>
                         </form>
                     </li>
                     

@@ -21,23 +21,30 @@ class Repository(object):
 
                 if first_line:
                     user_obj = User(first_line[1], first_line[0], first_line[3], first_line[4], 1)  # email, password, first_name, last_name
-                    print("user_obj: ")
-                    print(user_obj)
+                    
                     ###  REMOVE LATER END
                     return user_obj
                 else:
-                    return None
-
-
-
-                
+                    return None                
 
         except Exception as e:
             print("Error Occured in Repository.get_password" + str(e) )
             # prompt to create an account with the email(==user id)
             raise
 
-        
+
+    ### WORKING :D **************************************************************************
+    def update_user(self, user_obj, user_id):
+        try:
+            with self.__conn:
+                cursor = self.__conn.cursor()
+                cursor.execute("UPDATE users SET user_id=?, user_pw=?, fname=?, lname=? WHERE user_id = ?", (user_obj.email, user_obj.pw_hash, user_obj.fname, user_obj.lname, user_id))
+        except Exception as e:
+            print("Error Occured in Repository.update_user" + str(e))
+            raise
+        pass        
+
+
 
     def create_user(self, user_obj):
         try:
@@ -60,9 +67,6 @@ class Repository(object):
                 if first_line and first_line[0]:
                     user_id = first_line[0]
 
-                print("=========*********user_id start ***********============")
-                print(user_id)
-                print("=========*********user_id  end  ***********============")
 
                 return user_id
 
@@ -183,7 +187,6 @@ class Repository(object):
             result = exe.fetchall()
             list_all.extend(result)
 
-            print(list_all)
             return list_all
         except Exception as e:
             print("ERROR OCCURED in Repository.get_trips....shhhh...: " + str(e))
