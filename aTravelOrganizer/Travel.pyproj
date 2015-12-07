@@ -72,6 +72,7 @@
     <Folder Include="Travel\templates\" />
     <Folder Include="Travel\templates\modals\" />
     <Folder Include="Travel\templates\login\" />
+    <Folder Include="Travel\templates\account\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="requirements.txt" />
@@ -99,6 +100,8 @@
     <Content Include="Travel\static\scripts\respond.js" />
     <Content Include="Travel\static\scripts\respond.min.js" />
     <Content Include="Travel\static\scripts\_references.js" />
+    <Content Include="Travel\templates\account.html" />
+    <Content Include="Travel\templates\account\display_account.html" />
     <Content Include="Travel\templates\login.html" />
     <Content Include="Travel\templates\login\create_account.html" />
     <Content Include="Travel\templates\login\login_form.html" />

@@ -19,22 +19,18 @@ class Repository(object):
                 exe = cursor.execute("select user_pw, user_id, user_pw, fname, lname from users where user_id = ?", (email,))
                 first_line = exe.fetchone()
 
+                if first_line:
+                    user_obj = User(first_line[1], first_line[0], first_line[3], first_line[4], 1)  # email, password, first_name, last_name
+                    print("user_obj: ")
+                    print(user_obj)
+                    ###  REMOVE LATER END
+                    return user_obj
+                else:
+                    return None
 
-                ### REMOVE LATER START
-                print("password = " + str(first_line[0]))
-                print("password[0] = " + str(first_line[0]))
+
+
                 
-                for i in first_line:
-                    print("first_line===================================")
-                    print(i)
-
-                user_obj = User(first_line[1], first_line[0], first_line[3], first_line[4], 1)  # email, password, first_name, last_name
-                print("user_obj: ")
-                print(user_obj)
-                ###  REMOVE LATER END
-
-
-                return user_obj
 
         except Exception as e:
             print("Error Occured in Repository.get_password" + str(e) )
@@ -53,6 +49,48 @@ class Repository(object):
             raise
 
 
+    def get_admin_user_id(self, trip_id):
+        try:
+            with self.__conn:
+                cursor = self.__conn.cursor()
+                exe = cursor.execute("select user_id_s from trips where trip_id = ?", (trip_id,))
+                first_line = exe.fetchone()
+                
+                user_id = None
+                if first_line and first_line[0]:
+                    user_id = first_line[0]
+
+                print("=========*********user_id start ***********============")
+                print(user_id)
+                print("=========*********user_id  end  ***********============")
+
+                return user_id
+
+        except Exception as e:
+            print("Error Occured in Repository.get_admin_user_id" + str(e) )
+            raise
+
+        pass
+
+    # return True if trip_id is existing in table 'trips'
+    def check_exist_trip(self, existing_trip_id):
+        try:
+            with self.__conn:
+                cursor = self.__conn.cursor()
+                exe = cursor.execute("select * from trips where trip_id=?", (existing_trip_id,))
+                first_line = exe.fetchone()
+
+                if first_line:
+                    return True                    
+                else:
+                    return False
+                    
+                
+        except Exception as e:
+            print("Error Occured in Repository.check_exist_trip" + str(e) )
+            raise
+
+        pass
 
 
     def add_trip_name(self, trip_obj, admin):  # arg 'admin' is boolean
@@ -61,7 +99,7 @@ class Repository(object):
                 cursor = self.__conn.cursor()                
                 
                 if admin:
-                    cursor.execute("insert into trips (trip_id, trip_name, user_id_s) values (?, ?, ?)", (trip_obj.trip_id, trip_obj.trip_name, trip_obj.user_id))  
+                    cursor.execute("insert into trips (trip_id, trip_name, user_id_s, start_datetime, end_datetime) values (?, ?, ?, ?, ?)", (trip_obj.trip_id, trip_obj.trip_name, trip_obj.user_id, trip_obj.start_datetime, trip_obj.end_datetime))  
                     column = "trip_admin"                    
                 else:
                     column = "trip_user"
@@ -93,13 +131,32 @@ class Repository(object):
             print("Error Occured in Repository.add_trip_name" + str(e))
             raise
     
+
+    def get_trip_name(self, trip_id):
+        try:
+            cursor = self.__conn.cursor()
+            exe = cursor.execute("select trip_name from trips where trip_id= ?", (trip_id,) )  
+            result = exe.fetchone()
+
+            if result and result[0]:
+                return result[0]
+            else:
+                None
+
+        except Exception as e:
+            print("ERROR OCCURED in Repository.get_trip_name: " + str(e))
+            raise
+            
+
+
+
     def get_trips_from_trips_table(self, trip_id):
         try:
             
             list_all = []
 
             cursor = self.__conn.cursor()
-            exe = cursor.execute("select * from trips where trip_id= ?", (trip_id,) )   # user_id = ?", (user_id,)
+            exe = cursor.execute("select trip_id, trip_name, user_id_s, start_datetime, end_datetime	from trips where trip_id= ?", (trip_id,) )   # user_id = ?", (user_id,)
             result = exe.fetchone()
 
             if result:
@@ -107,9 +164,6 @@ class Repository(object):
             else:
                 list_all = []
 
-
-            print("list_all in Repository.get_trips_from_trips_table ++++++++++++++++++++++++++++++++++++++")
-            print(list_all)
             return list_all
         except Exception as e:
             print("ERROR OCCURED in Repository.get_trips_from_trips_table: " + str(e))
@@ -135,17 +189,76 @@ class Repository(object):
             print("ERROR OCCURED in Repository.get_trips....shhhh...: " + str(e))
             raise
 
+    def get_trip_datetime_start(self, event_obj):
+        try:
+            with self.__conn:
+                cursor = self.__conn.cursor()
+                exe = cursor.execute("select start_datetime from trips where trip_id = ?", (event_obj.travel_id,))
+                # event_obj.travel_id, event_obj.datetime 
+                first_line = exe.fetchone()
 
+                if first_line and first_line[0]:
+                    return first_line[0]
+                else:
+                    return None
+
+        except Exception as e:
+            print("Error OCCURED in Repository.get_trip_datetime_start : " + str(e))
+            raise
+        pass
+
+    def get_trip_datetime_end(self, event_obj):
+        try:
+            with self.__conn:
+                cursor = self.__conn.cursor()
+                exe = cursor.execute("select end_datetime from trips where trip_id = ?", (event_obj.travel_id,))
+                # event_obj.travel_id, event_obj.datetime 
+                first_line = exe.fetchone()
+
+                if first_line and first_line[0]:
+                    return first_line[0]
+                else:
+                    return None
+        except Exception as e:
+            print("Error OCCURED in Repository.get_trip_datetime_end : " + str(e))
+            raise
+        pass
+
+    def update_trip_datetime_start(self, datetime, travel_id):
+        try:
+            with self.__conn:
+                cursor = self.__conn.cursor()
+                exe = cursor.execute("UPDATE trips SET start_datetime=? WHERE trip_id=?", (datetime, travel_id))                
+                pass
+        except Exception as e:
+            print("Error OCCURED in Repository.update_trip_datetime_start : " + str(e))
+            raise
+        pass
+
+    def update_trip_datetime_end(self, datetime, travel_id):
+        try:
+            with self.__conn:
+                cursor = self.__conn.cursor()
+                exe = cursor.execute("UPDATE trips SET end_datetime=? WHERE trip_id=?", (datetime, travel_id))                
+                pass
+        except Exception as e:
+            print("Error OCCURED in Repository.update_trip_datetime_end : " + str(e))
+            raise
+        pass
+
+    # ADD EVENT OBJ : Flight
     def add_flight(self, flight_obj):
         try:
             with self.__conn:
                 cursor = self.__conn.cursor()
                 cursor.execute("insert into Flight (travel_id, title, datetime, flight_info, live_status) values(?, ?, ?, ?, ?)", (flight_obj.travel_id, flight_obj.title, flight_obj.datetime, flight_obj.info, flight_obj.status))
+                
         except Exception as e:
             print("ERROR OCCURED in Repository.add_flight: " + str(e) )
             raise
         return
 
+    # ADD EVENT OBJ : Hotel
     def add_hotel(self, hotel_obj):
         try:
             with self.__conn:
@@ -156,6 +269,7 @@ class Repository(object):
             raise
         return
 
+    # ADD EVENT OBJ : Place
     def add_place(self, place_obj):
         try:
             with self.__conn:
@@ -204,7 +318,7 @@ class Repository(object):
 
         except Exception as e:
             # Do something here
-            print("ERROR OCCURED in Repository.get_travel_events:" +  str(e) )
+            print("ERROR OCCURED in Repository.get_trip_users:" +  str(e) )
             raise
         return
 
@@ -238,7 +352,7 @@ class Repository(object):
 
         except Exception as e:
             # Do something here
-            print("ERROR OCCURED in Repository.get_travel_events:" +  str(e) )
+            print("ERROR OCCURED in Repository.get_trip_list:" +  str(e) )
             raise
         return
 
@@ -250,10 +364,22 @@ class Repository(object):
             cursor = self.__conn.cursor()
             list_all = []
 
-            for each in ["Flight","Hotel","Place"]:
-                exe = cursor.execute("select * from " + each + " where travel_id = ?", (travel_id,))
-                result = exe.fetchall()
+            exe = cursor.execute("select title, flight_info, datetime, live_status from Flight where travel_id = ? ", (travel_id,))
+            result = exe.fetchall()
+            if result and result[0]:
                 list_all.extend(result)
+
+            exe = cursor.execute("select title, hotel_info, datetime from Hotel where travel_id = ? ", (travel_id,))
+            result = exe.fetchall()
+            if result and result[0]:
+                list_all.extend(result)
+
+            exe = cursor.execute("select title, place_info, datetime from Place where travel_id = ? ", (travel_id,))
+            result = exe.fetchall()
+            if result and result[0]:
+                list_all.extend(result)
+
+
 
 
             # fetchone() --> get only the first line
